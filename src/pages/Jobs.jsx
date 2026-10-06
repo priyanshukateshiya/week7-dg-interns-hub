@@ -48,7 +48,7 @@ function Jobs() {
         <div className="container">
           <div className="filters">
             <div className="search-box">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
@@ -56,7 +56,7 @@ function Jobs() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by role, company or skill..."
+                placeholder="Search by role, company, location or skill..."
                 aria-label="Search internships"
               />
             </div>
@@ -114,7 +114,11 @@ function Jobs() {
       </section>
 
       {selectedJob && (
-        <ApplyModal job={selectedJob} onClose={() => setSelectedJob(null)} />
+        <ApplyModal
+          key={selectedJob.id}
+          job={selectedJob}
+          onClose={() => setSelectedJob(null)}
+        />
       )}
     </>
   );

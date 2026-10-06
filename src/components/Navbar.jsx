@@ -1,15 +1,26 @@
 import { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  const [lastPath, setLastPath] = useState(pathname);
   const close = () => setOpen(false);
+
+  // Close on any navigation, including browser back/forward, which no link click reports.
+  // Adjusting during render rather than in an effect avoids a second paint with the menu open.
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
+    setOpen(false);
+  }
 
   return (
     <nav className="navbar">
       <div className="container navbar-inner">
         <Link to="/" className="logo" onClick={close}>
-          <span className="logo-mark">DG</span>
+          <span className="logo-mark" aria-hidden="true">
+            DG
+          </span>
           <span>Interns Hub</span>
         </Link>
 
@@ -18,13 +29,14 @@ function Navbar() {
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle navigation menu"
           aria-expanded={open}
+          aria-controls="primary-nav"
         >
           <span></span>
           <span></span>
           <span></span>
         </button>
 
-        <ul className={`nav-links ${open ? "open" : ""}`}>
+        <ul id="primary-nav" className={`nav-links ${open ? "open" : ""}`}>
           <li>
             <NavLink to="/" end onClick={close}>
               Home

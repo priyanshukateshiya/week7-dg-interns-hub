@@ -1,20 +1,53 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const EMPTY = { name: "", email: "", phone: "", college: "", why: "" };
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 function ApplyModal({ job, onClose }) {
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const dialogRef = useRef(null);
+  // The backdrop should only close the dialog when the whole click happened on it —
+  // otherwise selecting text inside the form and releasing outside discards the entry.
+  const pressedBackdrop = useRef(false);
 
-  // Close on Escape and lock background scroll while open.
+  // Close on Escape, keep Tab inside the dialog, lock background scroll,
+  // and hand focus back to whatever opened it.
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && onClose();
+    const opener = document.activeElement;
+
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+
+      const items = [...dialogRef.current.querySelectorAll(FOCUSABLE)];
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    dialogRef.current?.querySelector(FOCUSABLE)?.focus();
+
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      if (opener instanceof HTMLElement) opener.focus();
     };
   }, [onClose]);
 
@@ -40,24 +73,58 @@ function ApplyModal({ job, onClose }) {
     e.preventDefault();
     const found = validate();
     setErrors(found);
-    if (Object.keys(found).length === 0) setSubmitted(true);
+    const firstInvalid = Object.keys(found)[0];
+    if (firstInvalid) {
+      dialogRef.current?.querySelector(`[name="${firstInvalid}"]`)?.focus();
+      return;
+    }
+    setSubmitted(true);
   };
 
+  // Wires a field to its error message so screen readers announce it.
+  const fieldProps = (name) => ({
+    name,
+    value: form[name],
+    onChange: change,
+    className: errors[name] ? "invalid" : "",
+    "aria-invalid": errors[name] ? true : undefined,
+    "aria-describedby": errors[name] ? `ap-${name}-error` : undefined,
+  });
+
+  // A plain helper, not a component: a component declared here would be a new type
+  // on every render, remounting the node and losing the role="alert" announcement.
+  const errorFor = (name) =>
+    errors[name] ? (
+      <div className="error-text" id={`ap-${name}-error`} role="alert">
+        {errors[name]}
+      </div>
+    ) : null;
+
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div
+      className="modal-backdrop"
+      onMouseDown={(e) => {
+        pressedBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && pressedBackdrop.current) onClose();
+      }}
+    >
       <div
         className="modal"
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`Apply for ${job.title}`}
-        onClick={(e) => e.stopPropagation()}
+        aria-labelledby="ap-heading"
       >
         {submitted ? (
           <div className="success-box">
-            <div className="tick">✓</div>
-            <h3>Application Submitted</h3>
+            <div className="tick" aria-hidden="true">
+              ✓
+            </div>
+            <h3 id="ap-heading">Application Submitted</h3>
             <p style={{ color: "var(--text-muted)" }}>
-              Thanks {form.name.split(" ")[0]}! Your application for{" "}
+              Thanks {form.name.trim().split(/\s+/)[0]}! Your application for{" "}
               <b>{job.title}</b> at {job.company} has been received. The team
               will reach out on {form.email} within 3–5 working days.
             </p>
@@ -69,7 +136,7 @@ function ApplyModal({ job, onClose }) {
           <>
             <div className="modal-head">
               <div>
-                <h3>Apply for {job.title}</h3>
+                <h3 id="ap-heading">Apply for {job.title}</h3>
                 <p>
                   {job.company} · {job.location} · {job.stipend}
                 </p>
@@ -82,57 +149,39 @@ function ApplyModal({ job, onClose }) {
             <form onSubmit={submit} noValidate>
               <div className="field">
                 <label htmlFor="ap-name">Full Name *</label>
-                <input
-                  id="ap-name"
-                  name="name"
-                  value={form.name}
-                  onChange={change}
-                  className={errors.name ? "invalid" : ""}
-                  placeholder="Your full name"
-                />
-                {errors.name && <div className="error-text">{errors.name}</div>}
+                <input id="ap-name" {...fieldProps("name")} placeholder="Your full name" />
+                {errorFor("name")}
               </div>
 
               <div className="field">
                 <label htmlFor="ap-email">Email *</label>
                 <input
                   id="ap-email"
-                  name="email"
                   type="email"
-                  value={form.email}
-                  onChange={change}
-                  className={errors.email ? "invalid" : ""}
+                  {...fieldProps("email")}
                   placeholder="you@example.com"
                 />
-                {errors.email && <div className="error-text">{errors.email}</div>}
+                {errorFor("email")}
               </div>
 
               <div className="field">
                 <label htmlFor="ap-phone">Phone *</label>
                 <input
                   id="ap-phone"
-                  name="phone"
-                  value={form.phone}
-                  onChange={change}
-                  className={errors.phone ? "invalid" : ""}
+                  {...fieldProps("phone")}
                   placeholder="10-digit mobile number"
                 />
-                {errors.phone && <div className="error-text">{errors.phone}</div>}
+                {errorFor("phone")}
               </div>
 
               <div className="field">
                 <label htmlFor="ap-college">College / University *</label>
                 <input
                   id="ap-college"
-                  name="college"
-                  value={form.college}
-                  onChange={change}
-                  className={errors.college ? "invalid" : ""}
+                  {...fieldProps("college")}
                   placeholder="Your institute name"
                 />
-                {errors.college && (
-                  <div className="error-text">{errors.college}</div>
-                )}
+                {errorFor("college")}
               </div>
 
               <div className="field">

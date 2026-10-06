@@ -9,7 +9,10 @@ import Contact from "./pages/Contact";
 // Scroll back to the top whenever the route changes.
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  useEffect(() => {
+    // "instant" so the global scroll-behavior: smooth does not animate route changes.
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
   return null;
 }
 

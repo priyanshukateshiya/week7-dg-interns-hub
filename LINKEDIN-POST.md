@@ -39,7 +39,7 @@ The brief said "job cards with an apply button". I wanted the apply button to ac
 Along the way I learned something that only shows up once you deploy: a client-side route 404s on refresh until you tell the host to serve `index.html` for every path. Two config files later (`_redirects` for Netlify, `vercel.json` for Vercel) and `/jobs` survives a hard reload.
 
 ⚙️ React 19 · React Router 7 · Vite · plain CSS custom properties
-📄 3 pages · 9 listings · 4 breakpoints · 0 UI libraries
+📄 3 pages · 9 listings · 4 layout tiers · 0 UI libraries
 
 🔗 Live: `<live-link>`
 💻 Code: `<github-link>`

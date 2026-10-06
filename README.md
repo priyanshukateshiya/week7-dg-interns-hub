@@ -17,7 +17,7 @@ A responsive job/internship landing website built with **React JS**, where stude
 - **Live search** by role, company, location or skill
 - **Category chips + work-type filter** (Remote / Onsite / Hybrid)
 - **Contact form** with client-side validation and success state
-- **Fully responsive** — mobile hamburger nav, fluid grids, no horizontal scroll
+- **Fully responsive** — 3 media queries giving 4 layout tiers, mobile hamburger nav, no horizontal scroll
 - **Accessible** — semantic HTML, ARIA labels, keyboard focus states, Escape to close modal
 
 ## 🛠 Tech Stack

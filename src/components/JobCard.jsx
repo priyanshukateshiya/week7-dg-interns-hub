@@ -12,8 +12,12 @@ function JobCard({ job, onApply }) {
       </div>
 
       <div className="job-meta">
-        <span>📍 {job.location}</span>
-        <span>⏳ {job.duration}</span>
+        <span>
+          <span aria-hidden="true">📍</span> {job.location}
+        </span>
+        <span>
+          <span aria-hidden="true">⏳</span> {job.duration}
+        </span>
         <span className={badgeClass}>{job.type}</span>
       </div>
 

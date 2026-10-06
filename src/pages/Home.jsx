@@ -55,7 +55,7 @@ function Home() {
               <Link to="/jobs" className="btn btn-light">
                 Browse Internships
               </Link>
-              <Link to="/contact" className="btn btn-outline" style={{ color: "#fff", borderColor: "rgba(255,255,255,.6)" }}>
+              <Link to="/contact" className="btn btn-outline-light">
                 Hire an Intern
               </Link>
             </div>
@@ -65,7 +65,7 @@ function Home() {
             <h3>Why students pick us</h3>
             <div className="hero-stat">
               <span>Active internships</span>
-              <b>{jobs.length}+</b>
+              <b>{jobs.length}</b>
             </div>
             <div className="hero-stat">
               <span>Hiring partners</span>
@@ -185,7 +185,11 @@ function Home() {
       </section>
 
       {selectedJob && (
-        <ApplyModal job={selectedJob} onClose={() => setSelectedJob(null)} />
+        <ApplyModal
+          key={selectedJob.id}
+          job={selectedJob}
+          onClose={() => setSelectedJob(null)}
+        />
       )}
     </>
   );
